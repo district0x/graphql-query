@@ -1,6 +1,6 @@
-(defproject madvas/venia "0.2.6-2"
-  :description "Clojure(Script) graphql client"
-  :url "https://github.com/Vincit/venia"
+(defproject district0x/graphql-query "1.0.0"
+  :description "Clojure(Script) graphql query generation"
+  :url "https://github.com/district0x/graphql-query"
   :license {:name "Eclipse Public License"
             :url  "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.9.0" :scope "provided"]
@@ -12,7 +12,7 @@
                         :source-paths ["src" "test"]
                         :compiler     {:output-to     "resources/test/js/unit-test.js"
                                        :process-shim  false
-                                       :main          venia.runner
+                                       :main          graphql-query.runner
                                        :optimizations :none
                                        :pretty-print  true
                                        :output-dir    "resources/test/js/gen/out"}}]})

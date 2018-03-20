@@ -1,16 +1,19 @@
-# venia
+# graphql-query
 
+[![Build Status](https://travis-ci.org/district0x/graphql-query.svg?branch=master)](https://travis-ci.org/district0x/graphql-query)
 
-[![Clojars Project](https://img.shields.io/clojars/v/vincit/venia.svg)](https://clojars.org/vincit/venia)
+A Clojure(Script) qraphql query generation library. Generate valid graphql queries with Clojure data structures.
 
+This library is fork of [venia](https://github.com/Vincit/venia) library with a few modifications. So big thanks
+to original creator!
 
-[![Build Status](https://travis-ci.org/Vincit/venia.svg?branch=master)](https://travis-ci.org/Vincit/venia)
-
-A Clojure(Script) qraphql query client library. Generate valid graphql queries with Clojure data structures.
+## Installation
+Add `[district0x/graphql-query "1.0.0"]` into your project.clj  
+Include `[graphql-query.core :refer [graphql-query]]` in your CLJS file
 
 ## Usage
 
-Venia is originally supposed to be used in Clojurescript apps, but can be used as well in Clojure, as the core 
+graphql-query is originally supposed to be used in Clojurescript apps, but can be used as well in Clojure, as the core 
 is written in CLJC. The sole purpose of this library is graphql query string generation from Clojure data, 
 so that strings concatenations and manipulations could be avoided when using grapqhl.
 It is up to developers to hook it up to frontend apps. However, at least some sort of re-frame-graphql-fx library 
@@ -19,22 +22,22 @@ is on a roadmap.
 
 ### Simple query
 
-The easiest way to start with venia, is simple's query generation. 
+The easiest way to start with graphql-query, is simple's query generation. 
 
-```clj
+```clojure
 (ns my.project
-  (:require [venia.core :as v]))
+  (:require [graphql-query.core :refer [graphql-query]]))
 
-(v/graphql-query {:venia/queries [[:employee {:id 1 :active true} [:name :address [:friends [:name :email]]]]]})
+(graphql-query {:queries [[:employee {:id 1 :active true} [:name :address [:friends [:name :email]]]]]})
 
 => "{employee(id:1,active:true){name,address,friends{name,email}}}"
 ```
 
 Obviously, If we would like to fetch employees and projects within the same simple query, we would do it this way:
 
-```clj
-(v/graphql-query {:venia/queries [[:employee {:id 1 :active true} [:name :address [:friends [:name :email]]]]
-                                  [:projects {:active true} [:customer :price]]]})
+```clojure
+(graphql-query {:queries [[:employee {:id 1 :active true} [:name :address [:friends [:name :email]]]]
+                          [:projects {:active true} [:customer :price]]]})
 
 => "{employee(active:true){name,address},project(active:true){customer,price}}"
 ```
@@ -46,21 +49,21 @@ respectively.
 
 We can add arguments to other fields easily by wrapping field name and its arguments to vector `[:customer {:id 2}]`:
 
-```clj
-(v/graphql-query {:venia/queries [[:projects {:active true} [[:customer {:id 2}] :price]]]})
+```clojure
+(graphql-query {:queries [[:projects {:active true} [[:customer {:id 2}] :price]]]})
 
 => "{project(active:true){customer(id:2),price}}"
 ```
 
 ### Query with alias
 
-Now, if we need to have an alias for query, it can be easily achieved by using venia's query-with-data map
+Now, if we need to have an alias for query, it can be easily achieved by using graphql-query's query-with-data map
 
-```clj
-(v/graphql-query {:venia/queries [{:query/data [:employee {:id 1 :active true} [:name :address [:friends [:name :email]]]]
-                                   :query/alias :workhorse}
-                                  {:query/data  [:employee {:id 2 :active true} [:name :address [:friends [:name :email]]]]
-                                   :query/alias :boss}]})
+```clojure
+(graphql-query {:queries [{:query/data [:employee {:id 1 :active true} [:name :address [:friends [:name :email]]]]
+                           :query/alias :workhorse}
+                          {:query/data [:employee {:id 2 :active true} [:name :address [:friends [:name :email]]]]
+                           :query/alias :boss}]})
      
 => prettified:
 {
@@ -77,18 +80,47 @@ Now, if we need to have an alias for query, it can be easily achieved by using v
 
 In the query above, we use `:query/data` key for query definition and `:query/alias` for query's alias definition.
 
+To use alias for nested fields, we use `:field/data` and `:field/alias`:
+
+```clojure
+(graphql-query {:queries [[:employee {:id 1 :active true}
+                           [:name :address
+                            {:field/data [[:friends [:name :email]]]
+                             :field/alias :mates}
+                            {:field/data [[:friends [:name :email]]]
+                             :field/alias :enemies}]]]})
+                                                            
+=> prettified:                                                            
+{
+  employee(id:1,active:true) {
+    name
+    address
+    mates: friends {
+      name
+      email
+    }
+    enemies: friends {
+      name,
+      email
+    }
+  }
+}                                                            
+```
+
+
+
 ### Query with fragments
 
-What about fragments? Just add `:venia/fragments` vector with fragments definitions
+What about fragments? Just add `:fragments` vector with fragments definitions
 
-```clj
-(v/graphql-query {:venia/queries   [{:query/data  [:employee {:id 1 :active true} :fragment/comparisonFields]
-                                     :query/alias :workhorse}
-                                    {:query/data  [:employee {:id 2 :active true} :fragment/comparisonFields]
-                                     :query/alias :boss}]
-                  :venia/fragments [{:fragment/name   "comparisonFields"
-                                     :fragment/type   :Worker
-                                     :fragment/fields [:name :address]}]})
+```clojure
+(graphql-query {:queries [{:query/data [:employee {:id 1 :active true} :fragment/comparisonFields]
+                           :query/alias :workhorse}
+                          {:query/data [:employee {:id 2 :active true} :fragment/comparisonFields]
+                           :query/alias :boss}]
+                :fragments [{:fragment/name "comparisonFields"
+                             :fragment/type :Worker
+                             :fragment/fields [:name :address]}]})
 
 => prettified:
 {
@@ -112,26 +144,26 @@ Now you can generate really complex queries with variables as well. In order to 
 an operation type and name.
 
 
-```clj
-(v/graphql-query {:venia/operation {:operation/type :query
-                                    :operation/name "employeeQuery"}
-                  :venia/variables [{:variable/name    "id"
-                                     :variable/type    :Int
-                                     :variable/default 1}
-                                    {:variable/name "name"
-                                     :variable/type :String}]
-                  :venia/queries   [{:query/data  [:employee {:id     :$id
-                                                              :active true
-                                                              :name   :$name}
-                                                   :fragment/comparisonFields]
-                                     :query/alias :workhorse}
-                                    {:query/data  [:employee {:id     :$id
-                                                              :active false}
-                                                   :fragment/comparisonFields]
-                                     :query/alias :boss}]
-                  :venia/fragments [{:fragment/name   "comparisonFields"
-                                     :fragment/type   :Worker
-                                     :fragment/fields [:name :address [:friends [:name :email]]]}]})
+```clojure
+(v/graphql-query {:operation {:operation/type :query
+                                :operation/name "employeeQuery"}
+                  :variables [{:variable/name "id"
+                               :variable/type :Int
+                               :variable/default 1}
+                              {:variable/name "name"
+                               :variable/type :String}]
+                  :queries [{:query/data [:employee {:id :$id
+                                                     :active true
+                                                     :name :$name}
+                                          :fragment/comparisonFields]
+                             :query/alias :workhorse}
+                            {:query/data [:employee {:id :$id
+                                                     :active false}
+                                          :fragment/comparisonFields]
+                             :query/alias :boss}]
+                  :fragments [{:fragment/name "comparisonFields"
+                               :fragment/type :Worker
+                               :fragment/fields [:name :address [:friends [:name :email]]]}]})
 
 => prettified:
 query employeeQuery($id: Int = 1, $name: String) {
@@ -158,17 +190,17 @@ fragment comparisonFields on Worker {
 
 Mutations are also supported, just use `:mutation` operation type:
 
-```clj
+```clojure
 
-(v/graphql-query {:venia/operation {:operation/type :mutation
-                                    :operation/name "AddProjectToEmployee"}
-                  :venia/variables [{:variable/name "id"
-                                     :variable/type :Int!}
-                                    {:variable/name "project"
-                                     :variable/type :ProjectNameInput!}]
-                  :venia/queries   [[:addProject {:employeeId :$id
-                                                  :project    :$project}
-                                     [:allocation :name]]]})
+(v/graphql-query {:operation {:operation/type :mutation
+                              :operation/name "AddProjectToEmployee"}
+                  :variables [{:variable/name "id"
+                               :variable/type :Int!}
+                              {:variable/name "project"
+                               :variable/type :ProjectNameInput!}]
+                  :queries [[:addProject {:employeeId :$id
+                                          :project :$project}
+                             [:allocation :name]]]})
                                      
 => prettified:
 mutation AddProjectToEmployee($id:Int!,$project:ProjectNameInput!) {
@@ -181,15 +213,15 @@ mutation AddProjectToEmployee($id:Int!,$project:ProjectNameInput!) {
 
 ### Validation
 
-Venia will verify that you don't use undefined variables or fragments. 
+graphql-query will verify that you don't use undefined variables or fragments. 
 
 For example, the following `v/graphql-query` calls will throw exceptions:
 
-```clj
+```clojure
 
-(v/graphql-query {:venia/queries [[:employee {:id 1 :active true} :fragment/undefined]]}
+(v/graphql-query {:queries [[:employee {:id 1 :active true} :fragment/undefined]]}
 
-(v/graphql-query {:venia/queries [[:employee {:id 1 :active :$undefined} [:name]]]}))
+(v/graphql-query {:queries [[:employee {:id 1 :active :$undefined} [:name]]]}))
 ```
 
 because fragment and variable are never defined.
@@ -199,8 +231,8 @@ because fragment and variable are never defined.
 You can use graphql's `__typename` meta field anywhere inside of your query.
 For example:
 
-```clj
-(v/graphql-query {:venia/queries [[:employee [:meta/typename :name :address]]}
+```clojure
+(v/graphql-query {:queries [[:employee [:meta/typename :name :address]]]})
 
 => prettified:
 
@@ -214,9 +246,39 @@ For example:
 
 ```
 
+### Name Transformation
+Sometimes you may want to preserve namespaces on fields and transform them into your own graphql-friendly format.
+For this purpose, this library contains: `*transform-name-fn*`. By default, this functions equals to core's `name` function.
+You can change this function globally with `set!` or just for a single query by passing it as `:transform-name-fn`. 
+
+```clojure
+;; Example of simplistic custom transform function
+(defn custom-name [key]
+    (str (when (namespace key)
+           (str (namespace key) "_"))
+         (name key)))
+
+;; Setting transform function globally
+(set! graphql-query.core/*transform-name-fn* custom-name)
+
+;; Passing transform function per query
+(v/graphql-query {:queries [[:employee [:user/name :user/address]]]
+                  :transform-name-fn custom-name})
+                  
+=> prettified:
+
+{
+  employee {
+    user_name
+    user_address
+  }
+}
+
+```
+
 
 ## License
 
-Copyright © 2017 Vincit
+Forked from [venia](https://github.com/Vincit/venia)
 
 Distributed under the Eclipse Public License, the same as Clojure.
