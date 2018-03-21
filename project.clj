@@ -1,4 +1,4 @@
-(defproject district0x/graphql-query "1.0.0"
+(defproject district0x/graphql-query "1.0.1"
   :description "Clojure(Script) graphql query generation"
   :url "https://github.com/district0x/graphql-query"
   :license {:name "Eclipse Public License"

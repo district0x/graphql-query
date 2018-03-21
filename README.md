@@ -8,7 +8,7 @@ This library is fork of [venia](https://github.com/Vincit/venia) library with a 
 to original creator!
 
 ## Installation
-Add `[district0x/graphql-query "1.0.0"]` into your project.clj  
+Add `[district0x/graphql-query "1.0.1"]` into your project.clj  
 Include `[graphql-query.core :refer [graphql-query]]` in your CLJS file
 
 ## Usage
@@ -246,10 +246,10 @@ For example:
 
 ```
 
-### Name Transformation
+### Keywords Transformation
 Sometimes you may want to preserve namespaces on fields and transform them into your own graphql-friendly format.
-For this purpose, this library contains: `*transform-name-fn*`. By default, this functions equals to core's `name` function.
-You can change this function globally with `set!` or just for a single query by passing it as `:transform-name-fn`. 
+For this purpose, this library contains: `*kw->gql-name*`. By default, this functions equals to core's `name` function.
+You can change this function globally with `set!` or just for a single query by passing it as `:kw->gql-name`. 
 
 ```clojure
 ;; Example of simplistic custom transform function
@@ -262,8 +262,8 @@ You can change this function globally with `set!` or just for a single query by 
 (set! graphql-query.core/*transform-name-fn* custom-name)
 
 ;; Passing transform function per query
-(v/graphql-query {:queries [[:employee [:user/name :user/address]]]
-                  :transform-name-fn custom-name})
+(v/graphql-query {:queries [[:employee [:user/name :user/address]]]}
+                 {:kw->gql-name custom-name})
                   
 => prettified:
 

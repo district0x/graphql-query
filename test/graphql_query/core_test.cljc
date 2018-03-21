@@ -79,13 +79,12 @@
 
 (deftest graphql-query-test
   (testing "Should be able to change name transform fn."
-    (let [data {:queries [[:employee {:id 1 :active true} [:user/name :address [:friends [:name :email]]]]]
-                :transform-name-fn (fn [key]
-                                     (str (when (namespace key)
-                                            (str (namespace key) "_"))
-                                          (name key)))}
+    (let [data {:queries [[:employee {:id 1 :active true} [:user/name :address [:friends [:name :email]]]]]}
           query-str "{employee(id:1,active:true){user_name,address,friends{name,email}}}"]
-      (is (= query-str (q/graphql-query data)))))
+      (is (= query-str (q/graphql-query data {:kw->gql-name (fn [key]
+                                                              (str (when (namespace key)
+                                                                     (str (namespace key) "_"))
+                                                                   (name key)))})))))
 
   (testing "Should create a valid graphql string."
     (let [data {:queries [[:employee {:id 1 :active true} [:name :address [:friends [:name :email]]]]]}
