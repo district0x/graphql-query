@@ -259,7 +259,7 @@ You can change this function globally with `set!` or just for a single query by 
          (name key)))
 
 ;; Setting transform function globally
-(set! graphql-query.core/*transform-name-fn* custom-name)
+(set! graphql-query.core/*kw->gql-name* custom-name)
 
 ;; Passing transform function per query
 (v/graphql-query {:queries [[:employee [:user/name :user/address]]]}
