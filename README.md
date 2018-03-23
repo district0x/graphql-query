@@ -8,7 +8,7 @@ This library is fork of [venia](https://github.com/Vincit/venia) library with a 
 to original creator!
 
 ## Installation
-Add `[district0x/graphql-query "1.0.1"]` into your project.clj  
+Add `[district0x/graphql-query "1.0.2"]` into your project.clj  
 Include `[graphql-query.core :refer [graphql-query]]` in your CLJS file
 
 ## Usage
@@ -111,14 +111,15 @@ To use alias for nested fields, we use `:field/data` and `:field/alias`:
 
 ### Query with fragments
 
-What about fragments? Just add `:fragments` vector with fragments definitions
+What about fragments? Just add `:fragments` vector with fragments definitions. 
+Fragment name must be keyword with namespace `:fragment`. 
 
 ```clojure
 (graphql-query {:queries [{:query/data [:employee {:id 1 :active true} :fragment/comparisonFields]
                            :query/alias :workhorse}
                           {:query/data [:employee {:id 2 :active true} :fragment/comparisonFields]
                            :query/alias :boss}]
-                :fragments [{:fragment/name "comparisonFields"
+                :fragments [{:fragment/name :fragment/comparisonFields
                              :fragment/type :Worker
                              :fragment/fields [:name :address]}]})
 
@@ -138,19 +139,68 @@ fragment comparisonFields on Worker {
 }
 ```
 
+When you need to combine fragments with regular fields use following syntax: 
+
+```clojure
+(graphql-query {:queries [[:employee {:id 1 :active true}
+                           [:age [:fragment/comparisonFields]]]]
+                :fragments [{:fragment/name :fragment/comparisonFields
+                             :fragment/type :Worker
+                             :fragment/fields [:name :address]}]})
+                             
+=> prettified:
+{
+  workhorse: employee(id: 1, active: true) {
+    age
+    ...comparisonFields
+  }  
+}
+
+fragment comparisonFields on Worker {
+  name
+  address
+}
+```                             
+
+For nested fragments, you'd use following syntax: 
+
+```clojure
+(graphql-query {:queries [[:employee {:id 1 :active true}
+                           [[:data [:fragment/comparisonFields]]]]]
+                :fragments [{:fragment/name :fragment/comparisonFields
+                             :fragment/type :Worker
+                             :fragment/fields [:name :address]}]})
+                             
+=> prettified:
+{
+  workhorse: employee(id: 1, active: true) {
+    data {
+      ...comparisonFields
+    }
+  }  
+}
+
+fragment comparisonFields on Worker {
+  name
+  address
+}
+```
+
+
+
 ### Query with variables
 
 Now you can generate really complex queries with variables as well. In order to define variables, we need to define 
-an operation type and name.
+an operation type and name. Variable name must be keyword starting with dollar sign. 
 
 
 ```clojure
 (v/graphql-query {:operation {:operation/type :query
-                                :operation/name "employeeQuery"}
-                  :variables [{:variable/name "id"
+                              :operation/name :employeeQuery}
+                  :variables [{:variable/name :$id
                                :variable/type :Int
                                :variable/default 1}
-                              {:variable/name "name"
+                              {:variable/name :$name
                                :variable/type :String}]
                   :queries [{:query/data [:employee {:id :$id
                                                      :active true
@@ -161,7 +211,7 @@ an operation type and name.
                                                      :active false}
                                           :fragment/comparisonFields]
                              :query/alias :boss}]
-                  :fragments [{:fragment/name "comparisonFields"
+                  :fragments [{:fragment/name :fragment/comparisonFields
                                :fragment/type :Worker
                                :fragment/fields [:name :address [:friends [:name :email]]]}]})
 
@@ -194,9 +244,9 @@ Mutations are also supported, just use `:mutation` operation type:
 
 (v/graphql-query {:operation {:operation/type :mutation
                               :operation/name "AddProjectToEmployee"}
-                  :variables [{:variable/name "id"
+                  :variables [{:variable/name :$id
                                :variable/type :Int!}
-                              {:variable/name "project"
+                              {:variable/name :$project
                                :variable/type :ProjectNameInput!}]
                   :queries [[:addProject {:employeeId :$id
                                           :project :$project}

@@ -49,19 +49,19 @@
                                                                                                                    [:graphql-query/field :email]]}]]))))
 
 (deftest variables->str-test
-  (is (= "$id:Int" (q/variables->str [{:variable/name "id"
+  (is (= "$id:Int" (q/variables->str [{:variable/name :$id
                                        :variable/type :Int}])))
-  (is (= "$id:Int=2" (q/variables->str [{:variable/name "id"
+  (is (= "$id:Int=2" (q/variables->str [{:variable/name :$id
                                          :variable/type :Int
                                          :variable/default 2}])))
-  (is (= "$id:Int,$name:String" (q/variables->str [{:variable/name "id"
+  (is (= "$id:Int,$name:String" (q/variables->str [{:variable/name :$id
                                                     :variable/type :Int}
-                                                   {:variable/name "name"
+                                                   {:variable/name :$name
                                                     :variable/type :String}])))
-  (is (= "$id:Int=1,$name:String=\"my-name\"" (q/variables->str [{:variable/name "id"
+  (is (= "$id:Int=1,$name:String=\"my-name\"" (q/variables->str [{:variable/name :$id
                                                                   :variable/type :Int
                                                                   :variable/default 1}
-                                                                 {:variable/name "name"
+                                                                 {:variable/name :$name
                                                                   :variable/type :String
                                                                   :variable/default "my-name"}])))
   (is (= "" (q/variables->str nil)))
@@ -69,7 +69,7 @@
 
 (deftest fragment->str-test
   (is (= "fragment comparisonFields on Worker{name,address,friends{name,email}}"
-         (q/fragment->str {:fragment/name "comparisonFields"
+         (q/fragment->str {:fragment/name :fragment/comparisonFields
                            :fragment/type :Worker
                            :fragment/fields [[:graphql-query/field :name] [:graphql-query/field :address]
                                              [:graphql-query/nested-field {:graphql-query/nested-field-root :friends
@@ -158,7 +158,7 @@
                            :query/alias :workhorse}
                           {:query/data [:employee {:id 2 :active true} :fragment/comparisonFields]
                            :query/alias :boss}]
-                :fragments [{:fragment/name "comparisonFields"
+                :fragments [{:fragment/name :fragment/comparisonFields
                              :fragment/type :Worker
                              :fragment/fields [:name :address [:friends [:name :email]]]}]}
           query-str (str "{workhorse:employee(id:1,active:true){...comparisonFields},boss:employee(id:2,active:true){...comparisonFields}} "
@@ -171,10 +171,10 @@
                            :query/alias :workhorse}
                           {:query/data [:employee {:id 2 :active true} :fragment/comparisonFields]
                            :query/alias :boss}]
-                :fragments [{:fragment/name "comparisonFields"
+                :fragments [{:fragment/name :fragment/comparisonFields
                              :fragment/type :Worker
                              :fragment/fields [:name :address [:friends [:name :email]]]}
-                            {:fragment/name "secondFragment"
+                            {:fragment/name :fragment/secondFragment
                              :fragment/type :Worker
                              :fragment/fields [:name]}]}
           query-str (str "{workhorse:employee(id:1,active:true){...comparisonFields},boss:employee(id:2,active:true){...comparisonFields}} "
@@ -188,13 +188,31 @@
                            :query/alias :workhorse}
                           {:query/data [:employee {:id 2 :active true} :fragment/comparisonFields]
                            :query/alias :boss}]
-                :fragments [{:fragment/name "comparisonFields"
+                :fragments [{:fragment/name :fragment/comparisonFields
                              :fragment/type :Worker
                              :fragment/fields [:name :address [:friends [:name :email]]]}
-                            {:fragment/name "secondFragment"
+                            {:fragment/name :fragment/secondFragment
                              :fragment/type :Worker
                              :fragment/fields [:name]}]}
           query-str (str "{workhorse:employee(id:1,active:true){...comparisonFields ...secondFragment},boss:employee(id:2,active:true){...comparisonFields}} "
+                         "fragment comparisonFields on Worker{name,address,friends{name,email}},"
+                         "fragment secondFragment on Worker{name}")
+          result (q/graphql-query data)]
+      (is (= query-str result))))
+
+  (testing "Should be able to combine fragments with regular fields"
+    (let [data {:queries [{:query/data [:employee {:id 1 :active true}
+                                        [:age [:fragment/comparisonFields :fragment/secondFragment] :height]]
+                           :query/alias :workhorse}
+                          {:query/data [:employee {:id 2 :active true} :fragment/comparisonFields]
+                           :query/alias :boss}]
+                :fragments [{:fragment/name :fragment/comparisonFields
+                             :fragment/type :Worker
+                             :fragment/fields [:name :address [:friends [:name :email]]]}
+                            {:fragment/name :fragment/secondFragment
+                             :fragment/type :Worker
+                             :fragment/fields [:name]}]}
+          query-str (str "{workhorse:employee(id:1,active:true){age,...comparisonFields ...secondFragment,height},boss:employee(id:2,active:true){...comparisonFields}} "
                          "fragment comparisonFields on Worker{name,address,friends{name,email}},"
                          "fragment secondFragment on Worker{name}")
           result (q/graphql-query data)]
@@ -205,10 +223,10 @@
                            :query/alias :workhorse}
                           {:query/data [:employee {:id 2 :active true} :fragment/comparisonFields]
                            :query/alias :boss}]
-                :fragments [{:fragment/name "comparisonFields"
+                :fragments [{:fragment/name :fragment/comparisonFields
                              :fragment/type :Worker
                              :fragment/fields [:name :address [:friends [:name :email]]]}
-                            {:fragment/name "secondFragment"
+                            {:fragment/name :fragment/secondFragment
                              :fragment/type :Worker
                              :fragment/fields [:name]}]}
           query-str (str "{workhorse:employee(id:1,active:true){data{...comparisonFields ...secondFragment}},boss:employee(id:2,active:true){...comparisonFields}} "
@@ -220,13 +238,13 @@
   (testing "Should create a valid graphql query with a fragment within a fragment field (deals with unions)"
     (let [data {:queries [{:query/data [:employee {:id 1 :active true} :fragment/comparisonFields]
                            :query/alias :workhorse}]
-                :fragments [{:fragment/name "comparisonFields"
+                :fragments [{:fragment/name :fragment/comparisonFields
                              :fragment/type :Worker
                              :fragment/fields [:name :address [:friends [:name :email]] [:pet [:fragment/dog :fragment/cat]]]}
-                            {:fragment/name "dog"
+                            {:fragment/name :fragment/dog
                              :fragment/type :Dog
                              :fragment/fields [:name :bark]}
-                            {:fragment/name "cat"
+                            {:fragment/name :fragment/cat
                              :fragment/type :Cat
                              :fragment/fields [:name :purr]}]}
           query-str (str "{workhorse:employee(id:1,active:true){...comparisonFields}} "
@@ -238,10 +256,10 @@
 
   (testing "Should create a valid graphql query with variables"
     (let [data {:operation {:operation/type :query
-                            :operation/name "employeeQuery"}
-                :variables [{:variable/name "id"
+                            :operation/name :employeeQuery}
+                :variables [{:variable/name :$id
                              :variable/type :Int}
-                            {:variable/name "name"
+                            {:variable/name :$name
                              :variable/type :String}]
                 :queries [[:employee {:id :$id
                                       :active true
@@ -254,9 +272,9 @@
   (testing "Should create a valid graphql query with variables, aliases and fragments"
     (let [data {:operation {:operation/type :query
                             :operation/name "employeeQuery"}
-                :variables [{:variable/name "id"
+                :variables [{:variable/name :$id
                              :variable/type :Int}
-                            {:variable/name "name"
+                            {:variable/name :$name
                              :variable/type :String}]
                 :queries [{:query/data [:employee {:id :$id
                                                    :active true
@@ -267,7 +285,7 @@
                                                    :active false}
                                         :fragment/comparisonFields]
                            :query/alias :boss}]
-                :fragments [{:fragment/name "comparisonFields"
+                :fragments [{:fragment/name :fragment/comparisonFields
                              :fragment/type :Worker
                              :fragment/fields [:name :address [:friends [:name :email]]]}]}
           query-str (str "query employeeQuery($id:Int,$name:String){workhorse:employee(id:$id,active:true,name:$name){...comparisonFields},"
@@ -278,9 +296,9 @@
   (testing "Should create a valid graphql mutation"
     (let [data {:operation {:operation/type :mutation
                             :operation/name "AddProjectToEmployee"}
-                :variables [{:variable/name "id"
+                :variables [{:variable/name :$id
                              :variable/type :Int!}
-                            {:variable/name "project"
+                            {:variable/name :$project
                              :variable/type :ProjectNameInput!}]
                 :queries [[:addProject {:employeeId :$id
                                         :project :$project}

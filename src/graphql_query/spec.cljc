@@ -50,7 +50,7 @@
 
     (let [fragment-names (->> x
                            :fragments
-                           (map :fragment/name)
+                           (map (comp name :fragment/name))
                            set)
           used-fragments (resolve-used-fragments x)
           undefined-fragments (c-set/difference used-fragments fragment-names)]
@@ -90,7 +90,7 @@
 
     (let [variables-names (->> x
                             :variables
-                            (map #(c-string/replace (:variable/name %) "$" ""))
+                            (map #(c-string/replace (name (:variable/name %)) "$" ""))
                             set)
           used-variables (resolve-used-variables x)
           undefined-variables (c-set/difference used-variables variables-names)]
@@ -137,17 +137,23 @@
 (s/def :field/data :graphql-query/fields)
 (s/def :field/alias :query/alias)
 
-(s/def :fragment/name string?)
+(s/def :fragment/name (fn [name]
+                        (and (keyword? name)
+                             (= (namespace name) "fragment"))))
+
 (s/def :fragment/type keyword?)
 (s/def :fragment/fields :graphql-query/fields)
 (s/def :graphql-query/fragment (s/keys :req [:fragment/name :fragment/type :fragment/fields]))
 (s/def :graphql-query/fragments (s/coll-of :graphql-query/fragment :min-count 1))
 
 (s/def :operation/type #{:query :mutation :subscription})
-(s/def :operation/name string?)
+(s/def :operation/name #(or (string? %) (keyword? %)))
 (s/def :graphql-query/operation (s/keys :req [:operation/type :operation/name]))
 
-(s/def :variable/name string?)
+(s/def :variable/name (fn [x]
+                        (and (keyword? x)
+                             (= (str (first (name x))) "$"))))
+
 (s/def :variable/type keyword?)
 (s/def :query/variable (s/keys :req [:variable/name :variable/type]
                                :opt [:variable/default]))

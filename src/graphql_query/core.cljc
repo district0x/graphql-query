@@ -111,7 +111,7 @@
   E.g. (variables->str [{:variable/name \"id\" :variable/type :Int}]) => \"$id: Int\""
   [variables]
   (->> (for [{var-name :variable/name var-type :variable/type var-default :variable/default} variables]
-         (str "$" var-name ":" (*kw->gql-name* var-type) (when var-default (str "=" (arg->str var-default)))))
+         (str (name var-name) ":" (*kw->gql-name* var-type) (when var-default (str "=" (arg->str var-default)))))
     (interpose ",")
     (apply str)))
 
@@ -152,7 +152,7 @@
   [[_ query]]
   "Given a spec conformed root query map, creates a complete query string."
   (let [operation (:operation query)
-        operation-with-name (when operation (str (*kw->gql-name* (:operation/type operation)) " " (:operation/name operation)))
+        operation-with-name (when operation (str (*kw->gql-name* (:operation/type operation)) " " (*kw->gql-name* (:operation/name operation))))
         variables (:variables query)
         variables-str (when variables (str "(" (variables->str variables) ")"))
         fragments (:fragments query)

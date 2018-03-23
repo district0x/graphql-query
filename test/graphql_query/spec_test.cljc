@@ -91,7 +91,7 @@
   (testing "Invalid fragment is used in query definition, should throw exception"
     (is (thrown? #?(:clj  Exception
                     :cljs js/Error) (qs/query->spec {:queries [[:employee {:id 1 :active true} :fragment/invalid]]
-                                                     :fragments [{:fragment/name "comparisonFields"
+                                                     :fragments [{:fragment/name :fragment/comparisonFields
                                                                   :fragment/type :Worker
                                                                   :fragment/fields [[:graphql-query/field :name] [:graphql-query/field :address]
                                                                                     [:graphql-query/nested-field {:graphql-query/nested-field-root :friends
@@ -103,7 +103,7 @@
   (testing "Invalid variable is used in query definition, should throw exception"
     (is (thrown? #?(:clj  Exception
                     :cljs js/Error) (qs/query->spec {:queries [[:employee {:id 1 :active :$invalid} [:name]]]
-                                                     :variables [{:variable/name "valid"
+                                                     :variables [{:variable/name :$valid
                                                                   :variable/type :Int}]}))))
   (testing "Undefined variables are used in query definition, should throw exception"
     (is (thrown? #?(:clj  Exception
@@ -111,11 +111,11 @@
   (testing "Valid vector with all possible data, should return conformed data"
     (is (= [:graphql-query/query-def {:operation {:operation/type :query
                                                   :operation/name "employeeQuery"}
-                                      :variables [{:variable/name "id"
+                                      :variables [{:variable/name :$id
                                                    :variable/type :Int}
-                                                  {:variable/name "name"
+                                                  {:variable/name :$name
                                                    :variable/type :String}]
-                                      :fragments [{:fragment/name "comparisonFields"
+                                      :fragments [{:fragment/name :fragment/comparisonFields
                                                    :fragment/type :Worker
                                                    :fragment/fields [[:graphql-query/field :name] [:graphql-query/field :address]
                                                                      [:graphql-query/nested-field {:graphql-query/nested-field-root :friends
@@ -134,9 +134,9 @@
                                                                                  :query/alias :boss}]]}]
            (qs/query->spec {:operation {:operation/type :query
                                         :operation/name "employeeQuery"}
-                            :variables [{:variable/name "id"
+                            :variables [{:variable/name :$id
                                          :variable/type :Int}
-                                        {:variable/name "name"
+                                        {:variable/name :$name
                                          :variable/type :String}]
                             :queries [{:query/data [:employee {:id :$id
                                                                :active true
@@ -147,6 +147,6 @@
                                                                :active false}
                                                     :fragment/comparisonFields]
                                        :query/alias :boss}]
-                            :fragments [{:fragment/name "comparisonFields"
+                            :fragments [{:fragment/name :fragment/comparisonFields
                                          :fragment/type :Worker
                                          :fragment/fields [:name :address [:friends [:name :email]]]}]})))))
