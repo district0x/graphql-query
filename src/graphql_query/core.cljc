@@ -120,7 +120,7 @@
   [fragment]
   (let [fields (str "{" (fields->str (:fragment/fields fragment)) "}")]
     (str "fragment "
-         (*kw->gql-name* (:fragment/name fragment))
+         (*kw->gql-name* (name (:fragment/name fragment)))
          " on "
          (*kw->gql-name* (:fragment/type fragment))
          fields)))

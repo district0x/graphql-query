@@ -166,6 +166,24 @@
           result (q/graphql-query data)]
       (is (= query-str result))))
 
+  (testing "Should create a valid graphql query with fragment when passed custom kw->gql-name function"
+    (let [data {:queries [{:query/data [:employee {:id 1 :active true} :fragment/comparisonFields]
+                           :query/alias :workhorse}
+                          {:query/data [:employee {:id 2 :active true} :fragment/comparisonFields]
+                           :query/alias :boss}]
+                :fragments [{:fragment/name :fragment/comparisonFields
+                             :fragment/type :Worker
+                             :fragment/fields [:name :address [:friends [:name :email]]]}]}
+          query-str (str "{workhorse:employee(id:1,active:true){...comparisonFields},boss:employee(id:2,active:true){...comparisonFields}} "
+                         "fragment comparisonFields on Worker{name,address,friends{name,email}}")
+          result (q/graphql-query data {:kw->gql-name (fn custom-name [key]
+                                                        (if (keyword? key)
+                                                          (str (when (namespace key)
+                                                                 (str (namespace key) "_"))
+                                                               (name key))
+                                                          key))})]
+      (is (= query-str result))))
+
   (testing "Should create a valid graphql query with multiple fragments"
     (let [data {:queries [{:query/data [:employee {:id 1 :active true} :fragment/comparisonFields]
                            :query/alias :workhorse}
@@ -267,6 +285,26 @@
                            [:name :address [:friends [:name :email]]]]]}
           query-str (str "query employeeQuery($id:Int,$name:String){employee(id:$id,active:true,name:$name){name,address,friends{name,email}}}")
           result (q/graphql-query data)]
+      (is (= query-str result))))
+
+  (testing "Should create a valid graphql query with variables when passed custom kw->gql-name function"
+    (let [data {:operation {:operation/type :query
+                            :operation/name :employeeQuery}
+                :variables [{:variable/name :$id
+                             :variable/type :Int}
+                            {:variable/name :$name
+                             :variable/type :String}]
+                :queries [[:employee {:id :$id
+                                      :active true
+                                      :name :$name}
+                           [:name :address [:friends [:name :email]]]]]}
+          query-str (str "query employeeQuery($id:Int,$name:String){employee(id:$id,active:true,name:$name){name,address,friends{name,email}}}")
+          result (q/graphql-query data {:kw->gql-name (fn custom-name [key]
+                                                        (if (keyword? key)
+                                                          (str (when (namespace key)
+                                                                 (str (namespace key) "_"))
+                                                               (name key))
+                                                          key))})]
       (is (= query-str result))))
 
   (testing "Should create a valid graphql query with variables, aliases and fragments"

@@ -8,7 +8,7 @@ This library is fork of [venia](https://github.com/Vincit/venia) library with a 
 to original creator!
 
 ## Installation
-Add `[district0x/graphql-query "1.0.2"]` into your project.clj  
+Add `[district0x/graphql-query "1.0.3"]` into your project.clj  
 Include `[graphql-query.core :refer [graphql-query]]` in your CLJS file
 
 ## Usage
