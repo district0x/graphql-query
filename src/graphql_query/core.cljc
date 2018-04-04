@@ -1,10 +1,18 @@
 (ns graphql-query.core
   (:require [graphql-query.spec :as spec]
             [clojure.string :as str])
-  #?(:clj
-     (:import (clojure.lang IPersistentMap Keyword IPersistentCollection))))
+  #?(:clj (:import (clojure.lang IPersistentMap Keyword IPersistentCollection))
+     :cljs (:import goog.date.Date goog.date.DateTime goog.date.UtcDateTime)))
 
 (def ^:dynamic *kw->gql-name* name)
+
+(defn kw->str [kw]
+  (subs (str kw) 1))
+
+(defn kw-arg->str [kw]
+  (if-let [ns (namespace kw)]
+    (str "\"" (kw->str kw) "\"")
+    (name kw)))
 
 (defprotocol ArgumentFormatter
   "Protocol responsible for query arguments' formatting to string.
@@ -37,7 +45,7 @@
           IPersistentCollection
           (arg->str [arg] (str "[" (apply str (interpose "," (map arg->str arg))) "]"))
           Keyword
-          (arg->str [arg] (*kw->gql-name* arg))
+          (arg->str [arg] (kw-arg->str arg))
           Object
           (arg->str [arg] (str arg))))
 
@@ -59,13 +67,19 @@
            List
            (arg->str [arg] (sequential->str arg))
            Keyword
-           (arg->str [arg] (*kw->gql-name* arg))
+           (arg->str [arg] (kw-arg->str arg))
            number
            (arg->str [arg] (str arg))
            object
            (arg->str [arg] (str arg))
            boolean
-           (arg->str [arg] (str arg))))
+           (arg->str [arg] (str arg))
+           goog.date.Date
+           (arg->str [arg] (.getTime arg))
+           goog.date.DateTime
+           (arg->str [arg] (.getTime arg))
+           goog.date.UtcDateTime
+           (arg->str [arg] (.getTime arg))))
 
 (defn meta-field->str
   "Converts namespaced meta field keyword to graphql format, e.g :meta/typename -> __typename"
