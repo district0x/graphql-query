@@ -14,7 +14,7 @@
   (is (= "human" (q/arg->str :human)))
   (is (= "1" (q/arg->str 1)))
   (is (= "{active:true}" (q/arg->str {:active true})))
-  (is (= "{status:\"status/active\"}" (q/arg->str {:status :status/active})))
+  (is (= "{status:active}" (q/arg->str {:status :status/active})))
 
   (let [value (hash-map :a 0 :b 1 :c 2)
         output (q/arg->str value)]
