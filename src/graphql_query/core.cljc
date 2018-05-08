@@ -6,13 +6,8 @@
 
 (def ^:dynamic *kw->gql-name* name)
 
-(defn kw->str [kw]
-  (subs (str kw) 1))
-
 (defn kw-arg->str [kw]
-  (if-let [ns (namespace kw)]
-    (str "\"" (kw->str kw) "\"")
-    (name kw)))
+  (*kw->gql-name* kw))
 
 (defprotocol ArgumentFormatter
   "Protocol responsible for query arguments' formatting to string.
@@ -227,4 +222,4 @@
   [data & [{:keys [:kw->gql-name]}]]
   (binding [*kw->gql-name* (or kw->gql-name *kw->gql-name*)]
     (-> (spec/query->spec data)
-      ->query-str)))
+        ->query-str)))
