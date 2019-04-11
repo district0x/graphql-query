@@ -37,6 +37,7 @@
   (is (= "id:1" (q/arguments->str {:id 1})))
   (is (= "id:null" (q/arguments->str {:id nil})))
   (is (= "id:1,type:\"human\"" (q/arguments->str {:id 1 :type "human"})))
+  (is (= "id:1,type:\"human \\\"being\\\"\"" (q/arguments->str {:id 1 :type "human \"being\""})))
   (is (= "id:1,vector:[1,2,3]" (q/arguments->str {:id 1 :vector [1 2 3]}))))
 
 (deftest meta-field->str

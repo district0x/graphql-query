@@ -34,7 +34,7 @@
           nil
           (arg->str [arg] "null")
           String
-          (arg->str [arg] (str "\"" arg "\""))
+          (arg->str [arg] (str "\"" (str/replace arg "\"" "\\\"") "\""))
           IPersistentMap
           (arg->str [arg] (str "{" (arguments->str arg) "}"))
           IPersistentCollection
