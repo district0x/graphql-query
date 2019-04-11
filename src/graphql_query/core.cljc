@@ -48,7 +48,7 @@
            nil
            (arg->str [arg] "null")
            string
-           (arg->str [arg] (str "\"" arg "\""))
+           (arg->str [arg] (str "\"" (str/replace arg "\"" "\\\"") "\""))
            PersistentArrayMap
            (arg->str [arg] (str "{" (arguments->str arg) "}"))
            PersistentHashMap
