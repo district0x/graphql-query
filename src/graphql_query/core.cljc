@@ -25,6 +25,9 @@
     flatten
     (apply str)))
 
+(defn escape-chars [s]
+  (clojure.string/escape s {\" "\\\""}))
+
 (defn sequential->str
   "Given something that is sequential format it to be like a JSON array."
   [arg]
@@ -34,7 +37,7 @@
           nil
           (arg->str [arg] "null")
           String
-          (arg->str [arg] (str "\"" arg "\""))
+          (arg->str [arg] (str "\"" (escape-chars arg) "\""))
           IPersistentMap
           (arg->str [arg] (str "{" (arguments->str arg) "}"))
           IPersistentCollection
@@ -48,7 +51,7 @@
            nil
            (arg->str [arg] "null")
            string
-           (arg->str [arg] (str "\"" arg "\""))
+           (arg->str [arg] (str "\"" (escape-chars arg) "\""))
            PersistentArrayMap
            (arg->str [arg] (str "{" (arguments->str arg) "}"))
            PersistentHashMap

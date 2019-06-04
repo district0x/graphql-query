@@ -8,21 +8,21 @@ This library is fork of [venia](https://github.com/Vincit/venia) library with a 
 to original creator!
 
 ## Installation
-Add `[district0x/graphql-query "1.0.5"]` into your project.clj  
+Add `[district0x/graphql-query "1.0.6"]` into your project.clj
 Include `[graphql-query.core :refer [graphql-query]]` in your CLJS file
 
 ## Usage
 
-graphql-query is originally supposed to be used in Clojurescript apps, but can be used as well in Clojure, as the core 
-is written in CLJC. The sole purpose of this library is graphql query string generation from Clojure data, 
+graphql-query is originally supposed to be used in Clojurescript apps, but can be used as well in Clojure, as the core
+is written in CLJC. The sole purpose of this library is graphql query string generation from Clojure data,
 so that strings concatenations and manipulations could be avoided when using grapqhl.
-It is up to developers to hook it up to frontend apps. However, at least some sort of re-frame-graphql-fx library 
-is on a roadmap. 
+It is up to developers to hook it up to frontend apps. However, at least some sort of re-frame-graphql-fx library
+is on a roadmap.
 
 
 ### Simple query
 
-The easiest way to start with graphql-query, is simple's query generation. 
+The easiest way to start with graphql-query, is simple's query generation.
 
 ```clojure
 (ns my.project
@@ -44,7 +44,7 @@ Obviously, If we would like to fetch employees and projects within the same simp
 
 ### Field arguments
 
-In the example above, `:employee` and `:projects` fields have arguments `{:id 1 :active true}` and `{:id 1 :active true}` 
+In the example above, `:employee` and `:projects` fields have arguments `{:id 1 :active true}` and `{:id 1 :active true}`
 respectively.
 
 We can add arguments to other fields easily by wrapping field name and its arguments to vector `[:customer {:id 2}]`:
@@ -64,7 +64,7 @@ Now, if we need to have an alias for query, it can be easily achieved by using g
                            :query/alias :workhorse}
                           {:query/data [:employee {:id 2 :active true} [:name :address [:friends [:name :email]]]]
                            :query/alias :boss}]})
-     
+
 => prettified:
 {
   workhorse: employee(id: 1, active: true) {
@@ -89,8 +89,8 @@ To use alias for nested fields, we use `:field/data` and `:field/alias`:
                              :field/alias :mates}
                             {:field/data [[:friends [:name :email]]]
                              :field/alias :enemies}]]]})
-                                                            
-=> prettified:                                                            
+
+=> prettified:
 {
   employee(id:1,active:true) {
     name
@@ -104,15 +104,15 @@ To use alias for nested fields, we use `:field/data` and `:field/alias`:
       email
     }
   }
-}                                                            
+}
 ```
 
 
 
 ### Query with fragments
 
-What about fragments? Just add `:fragments` vector with fragments definitions. 
-Fragment name must be keyword with namespace `:fragment`. 
+What about fragments? Just add `:fragments` vector with fragments definitions.
+Fragment name must be keyword with namespace `:fragment`.
 
 ```clojure
 (graphql-query {:queries [{:query/data [:employee {:id 1 :active true} :fragment/comparisonFields]
@@ -139,7 +139,7 @@ fragment comparisonFields on Worker {
 }
 ```
 
-When you need to combine fragments with regular fields use following syntax: 
+When you need to combine fragments with regular fields use following syntax:
 
 ```clojure
 (graphql-query {:queries [[:employee {:id 1 :active true}
@@ -147,22 +147,22 @@ When you need to combine fragments with regular fields use following syntax:
                 :fragments [{:fragment/name :fragment/comparisonFields
                              :fragment/type :Worker
                              :fragment/fields [:name :address]}]})
-                             
+
 => prettified:
 {
   workhorse: employee(id: 1, active: true) {
     age
     ...comparisonFields
-  }  
+  }
 }
 
 fragment comparisonFields on Worker {
   name
   address
 }
-```                             
+```
 
-For nested fragments, you'd use following syntax: 
+For nested fragments, you'd use following syntax:
 
 ```clojure
 (graphql-query {:queries [[:employee {:id 1 :active true}
@@ -170,14 +170,14 @@ For nested fragments, you'd use following syntax:
                 :fragments [{:fragment/name :fragment/comparisonFields
                              :fragment/type :Worker
                              :fragment/fields [:name :address]}]})
-                             
+
 => prettified:
 {
   workhorse: employee(id: 1, active: true) {
     data {
       ...comparisonFields
     }
-  }  
+  }
 }
 
 fragment comparisonFields on Worker {
@@ -190,8 +190,8 @@ fragment comparisonFields on Worker {
 
 ### Query with variables
 
-Now you can generate really complex queries with variables as well. In order to define variables, we need to define 
-an operation type and name. Variable name must be keyword starting with dollar sign. 
+Now you can generate really complex queries with variables as well. In order to define variables, we need to define
+an operation type and name. Variable name must be keyword starting with dollar sign.
 
 
 ```clojure
@@ -251,7 +251,7 @@ Mutations are also supported, just use `:mutation` operation type:
                   :queries [[:addProject {:employeeId :$id
                                           :project :$project}
                              [:allocation :name]]]})
-                                     
+
 => prettified:
 mutation AddProjectToEmployee($id:Int!,$project:ProjectNameInput!) {
   addProject(employeeId:$id, project:$project) {
@@ -263,7 +263,7 @@ mutation AddProjectToEmployee($id:Int!,$project:ProjectNameInput!) {
 
 ### Validation
 
-graphql-query will verify that you don't use undefined variables or fragments. 
+graphql-query will verify that you don't use undefined variables or fragments.
 
 For example, the following `v/graphql-query` calls will throw exceptions:
 
@@ -299,7 +299,7 @@ For example:
 ### Keywords Transformation
 Sometimes you may want to preserve namespaces on fields and transform them into your own graphql-friendly format.
 For this purpose, this library contains: `*kw->gql-name*`. By default, this functions equals to core's `name` function.
-You can change this function globally with `set!` or just for a single query by passing it as `:kw->gql-name`. 
+You can change this function globally with `set!` or just for a single query by passing it as `:kw->gql-name`.
 
 ```clojure
 ;; Example of simplistic custom transform function
@@ -314,7 +314,7 @@ You can change this function globally with `set!` or just for a single query by 
 ;; Passing transform function per query
 (v/graphql-query {:queries [[:employee [:user/name :user/address]]]}
                  {:kw->gql-name custom-name})
-                  
+
 => prettified:
 
 {
