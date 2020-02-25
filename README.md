@@ -44,7 +44,7 @@ Obviously, If we would like to fetch employees and projects within the same simp
 
 ### Field arguments
 
-In the example above, `:employee` and `:projects` fields have arguments `{:id 1 :active true}` and `{:id 1 :active true}`
+In the example above, `:employee` and `:projects` fields have arguments `{:id 1 :active true}` and `{:active true}`
 respectively.
 
 We can add arguments to other fields easily by wrapping field name and its arguments to vector `[:customer {:id 2}]`:
