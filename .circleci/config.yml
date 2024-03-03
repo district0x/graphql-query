@@ -12,7 +12,7 @@ jobs:
       - checkout
       - run:
           name: Compile Node tests
-          command: clj -A:dev:shadow-cljs compile test-node
+          command: clojure -A:dev:shadow-cljs compile test-node
       - run:
           name: Run Node tests
           command: node out/node-tests.js
@@ -38,8 +38,10 @@ workflows:
   version: 2
   test_and_deploy:
     jobs:
-      - test
+      - test:
+          context: district0x
       - deploy:
+          context: district0x
           requires:
             - test
           filters:
