@@ -16,8 +16,7 @@
     org.clojure/tools.nrepl {:mvn/version "0.2.13"}}},
   :build
   {:deps
-   {io.github.clojure/tools.build
-    {:git/tag "v0.8.3", :git/sha "0d20256"},
+   {io.github.clojure/tools.build {:mvn/version "0.9.6"},
     slipset/deps-deploy {:mvn/version "RELEASE"}},
    :ns-default build},
   :deploy

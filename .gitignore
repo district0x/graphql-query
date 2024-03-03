@@ -17,3 +17,4 @@ out
 .shadow-cljs
 .cpcache
 .clj-kondo
+.lsp
