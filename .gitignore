@@ -13,3 +13,7 @@ pom.xml.asc
 doo-index.html
 resources/test
 .idea
+out
+.shadow-cljs
+.cpcache
+.clj-kondo
