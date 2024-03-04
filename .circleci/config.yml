@@ -1,0 +1,49 @@
+version: 2.1
+jobs:
+  test:
+    working_directory: ~/ci
+    docker:
+      # Primary container image where all steps run.
+      - image: 487920318758.dkr.ecr.us-west-2.amazonaws.com/cljs-web3-ci:latest
+        aws_auth:
+            aws_access_key_id: $AWS_ACCESS_KEY_ID
+            aws_secret_access_key: $AWS_SECRET_ACCESS_KEY
+    steps:
+      - checkout
+      - run:
+          name: Compile Node tests
+          command: clojure -A:dev:shadow-cljs compile test-node
+      - run:
+          name: Run Node tests
+          command: node out/node-tests.js
+
+  deploy:
+    working_directory: ~/ci
+
+    docker:
+      - image: 487920318758.dkr.ecr.us-west-2.amazonaws.com/cljs-web3-ci:latest
+        aws_auth:
+            aws_access_key_id: $AWS_ACCESS_KEY_ID
+            aws_secret_access_key: $AWS_SECRET_ACCESS_KEY
+    steps:
+      - checkout
+      - run:
+          name: Build JAR
+          command: clojure -T:build jar
+      - run:
+          name: Release to clojars
+          command: clojure -T:build deploy
+
+workflows:
+  version: 2
+  test_and_deploy:
+    jobs:
+      - test:
+          context: district0x
+      - deploy:
+          context: district0x
+          requires:
+            - test
+          filters:
+            branches:
+              only: master

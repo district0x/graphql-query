@@ -1,0 +1,27 @@
+{:paths ["src"],
+ :mvn/repos
+ {"central" {:url "https://repo1.maven.org/maven2/"},
+  "clojars" {:url "https://clojars.org/repo"}},
+ :deps
+ {org.clojure/clojure {:mvn/version "1.11.1"},
+  thheller/shadow-cljs {:mvn/version "2.19.8"},
+  org.clojure/clojurescript {:mvn/version "1.11.60"},
+  com.andrewmcveigh/cljs-time {:mvn/version "0.5.2"}},
+ :install-deps true,
+ :aliases
+ {:dev
+  {:extra-paths ["test"]
+   :extra-deps
+   {com.cemerick/piggieback {:mvn/version "0.2.2"},
+    org.clojure/tools.nrepl {:mvn/version "0.2.13"}}},
+  :build
+  {:deps
+   {io.github.clojure/tools.build {:mvn/version "0.9.6"},
+    slipset/deps-deploy {:mvn/version "RELEASE"}},
+   :ns-default build},
+  :deploy
+  {:replace-deps {slipset/deps-deploy {:mvn/version "RELEASE"}},
+   :exec-fn deps-deploy.deps-deploy/deploy},
+  :shadow-cljs
+  {:extra-deps {thheller/shadow-cljs {:mvn/version "2.19.8"}},
+   :main-opts ["-m" "shadow.cljs.devtools.cli"]}}}

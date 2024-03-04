@@ -33,11 +33,16 @@
   [arg]
   (str "[" (apply str (interpose "," (map arg->str arg))) "]"))
 
+(def triple-quote "\"\"\"")
+
 #?(:clj (extend-protocol ArgumentFormatter
           nil
           (arg->str [arg] "null")
           String
-          (arg->str [arg] (str "\"" (escape-chars arg) "\""))
+          (arg->str [arg]
+            (if (clojure.string/includes? arg "\n")
+              (str triple-quote (escape-chars arg) triple-quote)
+              (str "\"" (escape-chars arg) "\"")))
           IPersistentMap
           (arg->str [arg] (str "{" (arguments->str arg) "}"))
           IPersistentCollection
@@ -51,7 +56,10 @@
            nil
            (arg->str [arg] "null")
            string
-           (arg->str [arg] (str "\"" (escape-chars arg) "\""))
+           (arg->str [arg]
+             (if (clojure.string/includes? arg "\n")
+               (str triple-quote (escape-chars arg) triple-quote)
+               (str "\"" (escape-chars arg) "\"")))
            PersistentArrayMap
            (arg->str [arg] (str "{" (arguments->str arg) "}"))
            PersistentHashMap

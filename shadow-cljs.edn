@@ -1,0 +1,9 @@
+{:nrepl {:port 30333}
+ :deps {:aliases [:dev]}
+ :npm-deps {:install true}
+ :builds
+ {:test-node
+  {:target :node-test
+   :ns-regexp "(.+)-test"
+   :output-to "out/node-tests.js"
+   :autorun false}}}

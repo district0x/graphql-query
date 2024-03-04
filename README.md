@@ -1,6 +1,6 @@
 # graphql-query
 
-[![Build Status](https://travis-ci.org/district0x/graphql-query.svg?branch=master)](https://travis-ci.org/district0x/graphql-query)
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/district0x/graphql-query/tree/master.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/district0x/graphql-query/tree/master)
 
 A Clojure(Script) qraphql query generation library. Generate valid graphql queries with Clojure data structures.
 
