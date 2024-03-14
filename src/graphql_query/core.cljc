@@ -26,7 +26,7 @@
     (apply str)))
 
 (defn escape-chars [s]
-  (clojure.string/escape s {\" "\\\""}))
+  (clojure.string/escape s {\" "\\\"" \\ "\\\\"}))
 
 (defn sequential->str
   "Given something that is sequential format it to be like a JSON array."
